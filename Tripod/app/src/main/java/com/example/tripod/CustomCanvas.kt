@@ -56,9 +56,9 @@ class CustomCanvas(context: Context) : View(context) {
         canvas.drawLine(0f, (height / 2).toFloat(), width.toFloat(), (height / 2).toFloat(), staticPaint)
         canvas.drawLine(
             (width / 2).toFloat(),
-            (height - 10).toFloat(),
+            (height - 300).toFloat(),
             (width / 2).toFloat(),
-            (10).toFloat(),
+            (300).toFloat(),
             staticPaint
         )
         dynamicPaint.color = if (angle != 0) Color.RED else Color.GREEN
