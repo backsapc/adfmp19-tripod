@@ -1,6 +1,8 @@
 package com.example.tripod
 
+import android.Manifest
 import android.content.pm.ActivityInfo
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -19,6 +21,9 @@ import io.fotoapparat.selector.*
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import kotlin.math.roundToInt
+import android.content.Intent
+import android.provider.MediaStore
+import androidx.core.app.ActivityCompat
 
 class MainActivity : AppCompatActivity() {
     private lateinit var axisService: AxisService
@@ -31,7 +36,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var fotoapparat: Fotoapparat
     private lateinit var cameraZoom: Zoom.VariableZoom
 
-
+    private var bitmap: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +44,6 @@ class MainActivity : AppCompatActivity() {
         requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
 
         axisService = AxisService(this)
-
 
         permissionsGranted = permissionsDelegate.hasCameraPermission()
 
@@ -62,8 +66,17 @@ class MainActivity : AppCompatActivity() {
         capture onClick takePicture()
         switchCamera onClick changeCamera()
         torchSwitch onCheckedChanged toggleFlash()
-    }
 
+        result.setOnClickListener({
+            if(this.bitmap != null){
+                val intent = Intent(this@MainActivity, ImageSaveActivity::class.java)
+                intent.putExtra("IMAGE", bitmap)
+                startActivity(intent)
+            }
+        })
+
+        Log.d("APP", "Created")
+    }
 
     private fun takePicture(): () -> Unit = {
         val photoResult = fotoapparat
@@ -81,10 +94,11 @@ class MainActivity : AppCompatActivity() {
                 .whenAvailable { photo ->
                     photo
                             ?.let {
-                                Log.i(LOGGING_TAG, "New photo captured. Bitmap length: ${it.bitmap.byteCount}")
+                                Log.i("BITMAP", "New photo captured. Bitmap length: ${it.bitmap.byteCount}")
 
                                 val imageView = findViewById<ImageView>(R.id.result)
-
+                                this.bitmap = it.bitmap
+                                MediaStore.Images.Media.insertImage(contentResolver, it.bitmap, "Image", "Made with Tripod app");
                                 imageView.setImageBitmap(it.bitmap)
                                 imageView.rotation = (-it.rotationDegrees).toFloat()
                             }
@@ -236,6 +250,5 @@ private sealed class Camera(
                     )
             )
     )
-
 
 }
